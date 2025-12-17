@@ -44,7 +44,7 @@ impl TicketStore {
         }
     }
 
-    pub fn add_ticket(&mut self, ticket_draft: TicketDraft) -> TicketId {
+    pub fn add_ticket2(&mut self, ticket_draft: TicketDraft) -> TicketId {
         let ticket_id;
         // check if self.tickets is empty:
         if self.tickets.is_empty() {
@@ -57,6 +57,7 @@ impl TicketStore {
             };
             self.tickets.push(ticket);
         } else {
+            // unwrap safe here because self.tickets is not empty
             let last_id = self.tickets.last().unwrap().id.0;
             ticket_id = TicketId(last_id + 1);
             let ticket = Ticket {
@@ -68,6 +69,52 @@ impl TicketStore {
             self.tickets.push(ticket);
         }
         return ticket_id;
+    }
+
+    pub fn add_ticket3(&mut self, ticket_draft: TicketDraft) -> TicketId {
+        let ticket_id;
+        // check if self.tickets is empty:
+        match self.tickets.is_empty() {
+            true => {
+                ticket_id = TicketId(0);
+                let ticket = Ticket {
+                    id: ticket_id,
+                    status: Status::ToDo,
+                    title: ticket_draft.title,
+                    description: ticket_draft.description,
+                };
+                self.tickets.push(ticket);
+            }
+            false => {
+                // unwrap safe here because self.tickets is not empty
+                let last_id = self.tickets.last().unwrap().id.0;
+                ticket_id = TicketId(last_id + 1);
+                let ticket = Ticket {
+                    id: ticket_id,
+                    status: Status::ToDo,
+                    title: ticket_draft.title,
+                    description: ticket_draft.description,
+                };
+                self.tickets.push(ticket);
+            }
+        }
+        return ticket_id;
+    }
+
+    pub fn add_ticket(&mut self, ticket_draft: TicketDraft) -> TicketId {
+        let ticket_id = match self.tickets.last() {
+            Some(ticket) => TicketId(ticket.id.0 + 1),
+            None => TicketId(0),
+        };
+
+        self.tickets.push(Ticket {
+            id: ticket_id,
+            title: ticket_draft.title,
+            description: ticket_draft.description,
+            status: Status::ToDo,
+        });
+
+        ticket_id
     }
 
     pub fn get(&self, id: TicketId) -> Option<&Ticket> {
